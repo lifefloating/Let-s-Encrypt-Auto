@@ -87,12 +87,25 @@ DNS 验证通过添加一条 TXT 记录到您的域名 DNS 解析中来验证您
 
 - Cloudflare (`dns_cf`)
 - Aliyun (`dns_ali`)
-- DNSPod (`dns_dp`)
+- DNSPod/腾讯云 (`dns_dp`)
 - 更多 DNS API 可参考 [acme.sh DNS API 文档](https://github.com/acmesh-official/acme.sh/wiki/dnsapi)
+
+#### 腾讯云DNS设置说明
+
+腾讯云DNS使用DNSPod的API，您需要进行以下设置：
+
+1. 登录腾讯云控制台，访问 [API密钥管理](https://console.cloud.tencent.com/cam/capi)
+2. 创建一个API密钥（如果没有的话）
+3. 记录您的 SecretId 和 SecretKey
+4. 使用以下命令申请证书：
+
+```bash
+./ssl-auto.sh -d "*.example.com" -e admin@example.com --dns dns_dp --credentials "DP_Id=您的SecretId DP_Key=您的SecretKey" --nginx-conf ~/nginx-configs
+```
 
 示例（Cloudflare）：
 ```bash
-./ssl-auto.sh -d "*.example.com" -e admin@example.com --dns dns_cf --credentials "CF_Key=您的CF密钥 CF_Email=您的CF邮箱"
+./ssl-auto.sh -d "*.example.com" -e admin@example.com --dns dns_cf --credentials "CF_Key=您的CF密钥 CF_Email=您的CF邮箱" --nginx-conf ~/nginx-configs
 ```
 
 ## Nginx 配置
