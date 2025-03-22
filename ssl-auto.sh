@@ -12,6 +12,8 @@ DNS_API=""
 DNS_CREDENTIALS=""
 INSTALL_NGINX=false
 NGINX_CONFIG_DIR="$HOME/nginx-ssl-configs"
+CRON_TIME="0 0,12 * * *" # 默认cron时间：每天0点和12点
+CUSTOM_CRON=false
 
 # 显示帮助信息
 show_help() {
@@ -26,11 +28,14 @@ show_help() {
   echo "  --dns API                 使用DNS API验证方式并指定API (如: dns_cf 表示Cloudflare)"
   echo "  --credentials PARAMS      DNS API凭证，格式取决于所选DNS API"
   echo "  --nginx-conf DIR          生成Nginx配置文件并保存到指定目录 (默认: ~/nginx-ssl-configs)"
+  echo "  --cron SCHEDULE           自定义证书检查的cron计划 (默认: \"0 0,12 * * *\")"
+  echo "  --evening-check           设置为每晚22点检查 (\"0 22 * * *\")"
   echo "  -h, --help                显示此帮助信息"
   echo ""
   echo "示例:"
   echo "  $0 -d example.com -e admin@example.com -w /var/www/html --nginx-conf /etc/nginx/conf.d/ssl"
   echo "  $0 -d '*.example.com' -e admin@example.com --dns dns_cf --credentials 'CF_Key=xxx CF_Email=xxx'"
+  echo "  $0 -d example.com -e admin@example.com -w /var/www/html --evening-check"
   exit 1
 }
 
@@ -62,6 +67,16 @@ parse_args() {
         NGINX_CONFIG_DIR="$2"
         INSTALL_NGINX=true
         shift 2
+        ;;
+      --cron)
+        CRON_TIME="$2"
+        CUSTOM_CRON=true
+        shift 2
+        ;;
+      --evening-check)
+        CRON_TIME="0 22 * * *"
+        CUSTOM_CRON=true
+        shift
         ;;
       -h|--help)
         show_help
@@ -138,6 +153,28 @@ install_acme() {
   
   # 设置默认CA为Let's Encrypt
   ~/.acme.sh/acme.sh --set-default-ca --server letsencrypt
+  
+  # 如果设置了自定义cron，配置它
+  if $CUSTOM_CRON; then
+    configure_custom_cron
+  fi
+}
+
+# 配置自定义cron时间
+configure_custom_cron() {
+  echo "配置自定义cron检查时间: $CRON_TIME"
+  
+  # 删除现有的acme.sh cron任务
+  (crontab -l 2>/dev/null | grep -v "acme.sh" | crontab -)
+  
+  # 添加新的acme.sh cron任务
+  (crontab -l 2>/dev/null; echo "$CRON_TIME \"$HOME/.acme.sh\"/acme.sh --cron --home \"$HOME/.acme.sh\" > /dev/null") | crontab -
+  
+  echo "自定义cron时间设置成功，证书将按照 \"$CRON_TIME\" 的计划进行检查"
+  
+  # 显示当前设置的cron任务
+  echo "当前cron配置:"
+  crontab -l | grep "acme.sh"
 }
 
 # 申请证书
@@ -294,6 +331,11 @@ main() {
   echo "域名: $DOMAIN"
   echo "证书位置: ~/.acme.sh/$DOMAIN/"
   echo "证书将自动每60天续期一次"
+  if $CUSTOM_CRON; then
+    echo "证书检查时间: $CRON_TIME"
+  else
+    echo "证书检查时间: 每天0点和12点"
+  fi
   if $INSTALL_NGINX; then
     echo "Nginx配置文件: $NGINX_CONFIG_DIR/$BASE_DOMAIN.conf"
     echo "请手动将此配置文件复制到您的Nginx配置目录并重新加载Nginx"

@@ -52,6 +52,8 @@ chmod +x ssl-auto.sh ssl-maintain.sh
 | `--dns` | 使用DNS API验证方式并指定API（如: dns_cf 表示Cloudflare） |
 | `--credentials` | DNS API凭证，格式取决于所选DNS API |
 | `--nginx-conf` | 生成Nginx配置文件并指定保存目录（默认: ~/nginx-ssl-configs） |
+| `--cron` | 自定义证书检查的cron计划（默认: "0 0,12 * * *"） |
+| `--evening-check` | 设置为每晚22点检查（"0 22 * * *"） |
 | `-h, --help` | 显示帮助信息 |
 
 ### ssl-maintain.sh 命令
@@ -204,7 +206,27 @@ server {
 
 ## 证书自动续期
 
-脚本使用 acme.sh 的定时任务功能，会自动每60天检查并续期证书。您无需手动操作，一切都将自动完成。
+脚本使用 acme.sh 的定时任务功能，会自动检查并续期证书。您无需手动操作，一切都将自动完成。
+
+### 自定义检查时间
+
+默认情况下，acme.sh 会在每天的 0:00 和 12:00 检查证书状态。您可以使用以下选项自定义检查时间：
+
+1. 使用 `--evening-check` 参数设置为每晚 22:00（10PM）检查：
+
+```bash
+./ssl-auto.sh -d example.com -e admin@example.com -w /var/www/html --evening-check
+```
+
+2. 使用 `--cron` 参数设置自定义的 cron 时间表：
+
+```bash
+# 每天早上8点和晚上8点检查
+./ssl-auto.sh -d example.com -e admin@example.com -w /var/www/html --cron "0 8,20 * * *"
+
+# 每周日凌晨3点检查
+./ssl-auto.sh -d example.com -e admin@example.com -w /var/www/html --cron "0 3 * * 0"
+```
 
 如果需要检查定时任务是否正确配置，可以使用：
 
