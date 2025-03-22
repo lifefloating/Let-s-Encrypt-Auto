@@ -34,11 +34,22 @@ chmod +x ssl-auto.sh ssl-maintain.sh
 ./ssl-auto.sh -d example.com -e admin@example.com -w /var/www/html --nginx-conf ~/nginx-configs
 ```
 
-3. 使用 DNS API 验证方式申请通配符证书（以 Cloudflare 为例）：
+3. 使用 DNS API 验证方式申请通配符证书：
 
-```bash
-./ssl-auto.sh -d "*.example.com" -e admin@example.com --dns dns_cf --credentials "CF_Key=你的CF密钥 CF_Email=你的CF邮箱" --nginx-conf ~/nginx-configs
-```
+   a. 腾讯云DNS（推荐国内用户）：
+   ```bash
+   ./ssl-auto.sh -d "*.example.com" -e admin@example.com --dns dns_dp --credentials "DP_Id=您的SecretId DP_Key=您的SecretKey" --nginx-conf ~/nginx-configs
+   ```
+
+   b. 阿里云DNS：
+   ```bash
+   ./ssl-auto.sh -d "*.example.com" -e admin@example.com --dns dns_ali --credentials "Ali_Key=您的AccessKey Ali_Secret=您的Secret" --nginx-conf ~/nginx-configs
+   ```
+
+   c. Cloudflare：
+   ```bash
+   ./ssl-auto.sh -d "*.example.com" -e admin@example.com --dns dns_cf --credentials "CF_Key=您的CF密钥 CF_Email=您的CF邮箱" --nginx-conf ~/nginx-configs
+   ```
 
 ## 参数说明
 
@@ -105,9 +116,17 @@ DNS 验证通过添加一条 TXT 记录到您的域名 DNS 解析中来验证您
 ./ssl-auto.sh -d "*.example.com" -e admin@example.com --dns dns_dp --credentials "DP_Id=您的SecretId DP_Key=您的SecretKey" --nginx-conf ~/nginx-configs
 ```
 
-示例（Cloudflare）：
+#### 阿里云DNS设置说明
+
+阿里云DNS使用阿里云的API，您需要进行以下设置：
+
+1. 登录阿里云控制台，访问 [RAM访问控制](https://ram.console.aliyun.com/users)
+2. 创建一个RAM用户并授予AliyunDNSFullAccess权限
+3. 创建API密钥，记录您的AccessKey ID和AccessKey Secret
+4. 使用以下命令申请证书：
+
 ```bash
-./ssl-auto.sh -d "*.example.com" -e admin@example.com --dns dns_cf --credentials "CF_Key=您的CF密钥 CF_Email=您的CF邮箱" --nginx-conf ~/nginx-configs
+./ssl-auto.sh -d "*.example.com" -e admin@example.com --dns dns_ali --credentials "Ali_Key=您的AccessKey Ali_Secret=您的Secret" --nginx-conf ~/nginx-configs
 ```
 
 ## Nginx 配置
