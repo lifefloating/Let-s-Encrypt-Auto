@@ -27,8 +27,8 @@
 1. 下载脚本：
 
 ```bash
-curl -O https://github.com/lifefloating/ssl-auto.sh
-curl -O https://github.com/lifefloating/ssl-maintain.sh
+curl -O https://github.com/lifefloating/Let-s-Encrypt-Auto/blob/master/ssl-auto.sh
+curl -O https://github.com/lifefloating/Let-s-Encrypt-Auto/blob/master/ssl-maintain.sh
 chmod +x ssl-auto.sh ssl-maintain.sh
 ```
 
